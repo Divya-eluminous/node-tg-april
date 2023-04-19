@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const roleController = require('../controllers/roleController');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken,checkRole } = require('../middleware/auth');
 
-router.post('/create',verifyToken,roleController.createRole);
-router.patch('/update/:id',verifyToken,roleController.updateRole);
-router.post('/list',verifyToken,roleController.getRoles);
-router.delete('/delete/:id',verifyToken,roleController.deleteRole);
-router.post('/assign',verifyToken,roleController.assignRole);
+
+const isSuperadmin = checkRole(['superadmin']);
+
+router.post('/create',verifyToken,isSuperadmin,roleController.createRole);
+router.patch('/update/:id',verifyToken,isSuperadmin,roleController.updateRole);
+router.post('/list',verifyToken,isSuperadmin,roleController.getRoles);
+router.delete('/delete/:id',verifyToken,isSuperadmin,roleController.deleteRole);
+router.post('/assign',verifyToken,isSuperadmin,roleController.assignRole);
 
 module.exports = router;
