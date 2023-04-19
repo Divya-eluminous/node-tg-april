@@ -385,15 +385,41 @@ async function login(req,res)
 {
     var email = req.body.email;
     var password = req.body.password;
-    var getUser = await user.findOne({email:email}).then(async(data)=>{
+    var getUser = await user.findOne({email:email}).populate([
+        {
+            model:'User',
+            path:'roleslist'
+        }
+    ]).then(async(data)=>{
         if(data)
         {
+           // console.log(data.roleslist);
             var dbPassword = data.password;
             const resPassword =  await bcrypt.compare(password,dbPassword);
             if(resPassword)
             {
                 const token = jwtToken.generateToken(data._id);
-                updateAccessToken = await user.updateOne({email:email},{ $set:{api_access_token :token } }).then((updated)=>{
+                updateAccessToken = await user.updateOne({email:email},{ $set:{api_access_token :token } }).then(async(updated)=>{
+
+                    if(data.roleslist){
+                        for(var j in data.roleslist)
+                        {
+                            var roleName = ''; var roleInfo = [];
+                            var getRoleName= await role.findOne({_id:data.roleslist[j]['role_id']});
+                                var roleName = getRoleName.name?getRoleName.name:'';
+                                console.log(roleName);
+                               var roleData={};
+                               roleData = {
+                                _id:data.roleslist[j]['_id'],
+                                role_id :data.roleslist[j]['role_id'],
+                                user_id : data.roleslist[j]['user_id'],
+                                role_name :roleName
+                               }
+                               
+                                data.roleslist[j] = roleData;
+                        }//for loop
+                    }//if roleListArr
+
                     const userData={
                         id:data._id,
                         name:data.name,
@@ -401,7 +427,8 @@ async function login(req,res)
                         age:data.age,
                         status:data.status,
                         profile_photo_path:data.profile_photo_path,
-                        token:token
+                        token:token,
+                        roles:data.roleslist?data.roleslist:[]
                     }
                      res.send({
                         status:"success",
