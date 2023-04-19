@@ -160,6 +160,7 @@ async function deleteRole(req,res){
         const deleteRole = role.deleteOne({_id:roleId}).then((result)=>{
             if(result.deletedCount==1){
                res.send({
+                 status:'success',
                  message:'Role deleted successfully.',
                  error:null,
                  data:null
@@ -167,6 +168,7 @@ async function deleteRole(req,res){
             }else
             {
                res.send({
+                 status:'error',
                  message:'Role not deleted.',
                  error:'Unable to delete the role.',
                  data:null
@@ -174,6 +176,7 @@ async function deleteRole(req,res){
             }
          }).catch((error)=>{
               res.send({
+                status:'error',
                  message:'Role not deleted.',
                  error:error.message,
                  data:null
@@ -193,7 +196,6 @@ async function deleteRole(req,res){
 async function assignRole(req,res)
 {
   
-
   var userId = req.body.user_id;
   var roleId = req.body.role_id;
   

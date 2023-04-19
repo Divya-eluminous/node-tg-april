@@ -37,6 +37,11 @@ async function verifyToken(req,res,next)
                model:'User'                 
            },       
        ]).then(async(results)=>{
+
+            if(results.api_access_token!=headToken)
+            {
+                return res.status(401).send({message:'Invalid user access token does not match with login user.'});
+            }
            
             if(results.roleslist){
                 for(var j in results.roleslist)
@@ -79,7 +84,7 @@ const checkRole = (roles) => {
         if (roles.some(role => req.user.roleslist.includes(role))) {
             next();
         } else {
-            res.status(401).send({message:'You dont have access to this route.'});
+            res.status(401).send({message:'You do not have permission to access this route.'});
         }
     };
 };

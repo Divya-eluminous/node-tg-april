@@ -18,8 +18,7 @@ async function createUser(req,res)
         password = await bcrypt.hash(password,10);
     }
     
-
-  
+    //If profile photo not found show error
     if(!req.file){
         return res.send({
             status:"error",
@@ -76,6 +75,7 @@ async function createUser(req,res)
                 profile_photo_path:result.profile_photo_path,
             }
             return res.send({
+                status:'success',
                 message:'User saved successfully.',
                 error:null,
                 data:data
@@ -84,6 +84,7 @@ async function createUser(req,res)
         else
         {
             return res.send({
+                status:'error',
                 message:'User not created.',
                 error:null,
                 data:null
@@ -92,6 +93,7 @@ async function createUser(req,res)
     }).catch((error)=>{
         if (error.code === 11000) {
             return res.send({
+                status:'error',
                 message:'User not created.',
                 error:'email must be unique',
                 data:null
@@ -99,6 +101,7 @@ async function createUser(req,res)
         }else
         {
             return res.send({
+                status:'error',
                 message:'User not created.',
                 error:error.message,
                 data:null
@@ -110,7 +113,6 @@ async function createUser(req,res)
 
 async function updateUser(req,res)
 {
-    console.log('in update function');
     var userId = req.params.id;
     if(isValidObjectId(userId))
     {
@@ -126,11 +128,11 @@ async function updateUser(req,res)
             }
         },
         { runValidators: true } // apply validation at the time of update which are in schema
-    ).then((result)=>{
-        console.log(result);
+    ).then((result)=>{       
         if(result.modifiedCount==1 || result.matchedCount==1)
         {
             res.send({
+                status:'success',
                 message:'User updated successfully.',
                 error:null,
                 data:null
@@ -138,6 +140,7 @@ async function updateUser(req,res)
         }
         else{
             res.send({
+                status:'error',
                 message:'Unable to update the user.',
                 error:null,
                 data:null
@@ -145,6 +148,7 @@ async function updateUser(req,res)
         }       
     }).catch((error)=>{
         res.send({
+            status:'error',
             message:'Unable to update the user.',
             error:error.message,
             data:null
@@ -167,6 +171,7 @@ async function deleteUser(req,res){
         const deleteUser = user.deleteOne({_id:userId}).then((result)=>{
             if(result.deletedCount==1){
                res.send({
+                 status:'error',
                  message:'User deleted successfully.',
                  error:null,
                  data:null
@@ -174,13 +179,15 @@ async function deleteUser(req,res){
             }else
             {
                res.send({
+                 status:'error',
                  message:'User not deleted.',
                  error:'Unable to delete the user.',
                  data:null
-             });
+              });
             }
          }).catch((error)=>{
               res.send({
+                 status:'error',
                  message:'User not deleted.',
                  error:error.message,
                  data:null
@@ -188,6 +195,7 @@ async function deleteUser(req,res){
          });
     }).catch((error)=>{
         res.send({
+            status:'error',
             message:'User not found.',
             error:error.message,
             data:null
@@ -197,13 +205,11 @@ async function deleteUser(req,res){
 }//deleteUser
 
 async function getDetails(req,res){
- console.log('in get details function');
  const userId = req.params.id;
     await user.validateUserId(userId).then(async(data)=>{
         const userData = await user.find({_id:userId}).then((result)=>{
-
-            
-            // Folder path
+           
+            // Folder path of profile photo
             const folderPath = './uploads/profile_photo/';
 
             // File name to check
