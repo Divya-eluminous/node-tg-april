@@ -6,6 +6,7 @@ const path = require('path');
 const role = require('../schemas/roleSchema');
 const jwtToken = require('../middleware/auth');
 const userRoles = require('../schemas/userRoleSchema');
+const helper = require('../helper/helper');
 
 async function createUser(req,res)
 {
@@ -401,25 +402,7 @@ async function login(req,res)
                 const token = jwtToken.generateToken(data._id);
                 updateAccessToken = await user.updateOne({email:email},{ $set:{api_access_token :token } }).then(async(updated)=>{
 
-                    if(data.roleslist){
-                        for(var j in data.roleslist)
-                        {
-                            var roleName = ''; var roleInfo = [];
-                            var getRoleName= await role.findOne({_id:data.roleslist[j]['role_id']});
-                                var roleName = getRoleName.name?getRoleName.name:'';
-                                console.log(roleName);
-                               var roleData={};
-                               roleData = {
-                                _id:data.roleslist[j]['_id'],
-                                role_id :data.roleslist[j]['role_id'],
-                                user_id : data.roleslist[j]['user_id'],
-                                role_name :roleName
-                               }
-                               
-                                data.roleslist[j] = roleData;
-                        }//for loop
-                    }//if roleListArr
-
+                    var getUserRoleList = await helper.getUserRoles(data.roleslist);
                     const userData={
                         id:data._id,
                         name:data.name,
@@ -428,7 +411,7 @@ async function login(req,res)
                         status:data.status,
                         profile_photo_path:data.profile_photo_path,
                         token:token,
-                        roles:data.roleslist?data.roleslist:[]
+                        roles:getUserRoleList?getUserRoleList:[]
                     }
                      res.send({
                         status:"success",
