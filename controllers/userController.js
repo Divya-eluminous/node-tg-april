@@ -208,7 +208,12 @@ async function deleteUser(req,res){
 async function getDetails(req,res){
  const userId = req.params.id;
     await user.validateUserId(userId).then(async(data)=>{
-        const userData = await user.find({_id:userId}).then((result)=>{
+        const userData = await user.find({_id:userId}).populate([
+            {
+                model:'User',
+                path:'roleslist'
+            }
+        ]).then(async(result)=>{
            
             // Folder path of profile photo
             const folderPath = './uploads/profile_photo/';
@@ -223,15 +228,20 @@ async function getDetails(req,res){
             profilePhoto = profilePhotoPath ='';
             fs.access(filePath, fs.constants.F_OK, (err) => {
                 if (err) {
-                console.error(`File ${fileName} does not exist`);
+                 // console.error(`File ${fileName} does not exist`);
                 profilePhoto = '';
                 profilePhotoPath = '';
                 } else {
-                console.log(`File ${fileName} exists`);
+                 //console.log(`File ${fileName} exists`);
                   profilePhoto = result[0]['profile_photo']?result[0]['profile_photo']:'';
                   profilePhotoPath = result[0]['profile_photo_path']?result[0]['profile_photo_path']:'';
                 }
             });
+
+            var getRolesList=[];
+            if(result[0]['roleslist']){
+                var getRolesList = await helper.getUserRoles(result[0]['roleslist']);
+            }
 
             res.send({
                 status:'success',
@@ -243,7 +253,8 @@ async function getDetails(req,res){
                     email:result[0]['email']?result[0]['email']:'',
                     profile_photo:profilePhoto?profilePhoto:'',
                     profile_photo_path:profilePhotoPath?profilePhotoPath:'',
-                    status:result[0]['status']?result[0]['status']:''
+                    status:result[0]['status']?result[0]['status']:'',
+                    roles:getRolesList?getRolesList:[]
                 }
             });  
 
