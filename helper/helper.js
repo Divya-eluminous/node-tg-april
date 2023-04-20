@@ -7,7 +7,7 @@ async function getUserRoles(roleslist)
         {
             var roleName = ''; var roleInfo = [];
             var getRoleName= await role.findOne({_id:roleslist[j]['role_id']});
-                var roleName = getRoleName.name?getRoleName.name:'';
+            var roleName = getRoleName.name?getRoleName.name:'';
                
                var roleData={};
                roleData = {
