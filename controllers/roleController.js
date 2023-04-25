@@ -238,11 +238,64 @@ async function assignRole(req,res)
     });  
 }//assignRole
 
+async function userUpdateRole(req,res)
+{
+    var userId = req.body.user_id;
+    var roleIdArr = req.body.role_ids;   
+    var login_id = req.body.login_id;
+    console.log(roleIdArr);
+
+    var checkExists = await userRoles.find({ user_id:userId})
+    .then(async(data)=>{
+        console.log(data);
+        if(roleIdArr)
+        {
+            var deletePreviousRole = await userRoles.deleteMany({user_id:userId})
+            .then(async(deleted)=>{ 
+                    var roles = roleIdArr[0].split(','); 
+                    console.log(roles);
+                    for(i=0;i<roles.length;i++)
+                    {
+                        console.log(roles[i]);
+                        var userRoleData = {
+                            user_id : userId,
+                            role_id : roles[i]
+                        }
+                        
+                        await userRoles.create(userRoleData).then((result)=>{
+                            console.log('user role created successfully.');
+                        }).catch((error)=>{
+                            console.log('error while creating user roles.');
+                        });
+                           
+                    }//for
+            }).catch((error)=>{
+                console.log('error while deleting roles.');
+            });
+        }//if roleId
+
+        res.send({
+            status:'success',
+            message:'User role added successfully.',
+            error:null,
+            data:null 
+        });
+
+    }).catch((error)=>{
+        res.send({
+            status:'error',
+            message:'Unable to find user role',
+            error:'User roles not found',
+            data:null 
+        });
+    }); 
+}//userUpdateRole
 
 module.exports = {
     createRole,
     updateRole,
     getRoles,
     deleteRole,
-    assignRole
+    assignRole,
+    userUpdateRole
 }

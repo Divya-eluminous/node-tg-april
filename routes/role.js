@@ -11,5 +11,6 @@ router.patch('/update/:id',verifyToken,isSuperadmin,roleController.updateRole);
 router.post('/list',verifyToken,isSuperadmin,roleController.getRoles);
 router.delete('/delete/:id',verifyToken,isSuperadmin,roleController.deleteRole);
 router.post('/assign',verifyToken,isSuperadmin,roleController.assignRole);
+router.post('/update-roles',verifyToken,roleController.userUpdateRole);
 
 module.exports = router;
